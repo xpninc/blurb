@@ -169,7 +169,7 @@ class Blurb
     end
 
      def workflowExecutions(entity_id,instance_id)
-      WorkFlowExecutionRequests.new(
+      ::Blurb::WorkFlowExecutionRequests.new(
         headers: headers_hash.merge('Amazon-Advertising-API-AdvertiserId': entity_id, 'Amazon-Advertising-API-MarketplaceId': 'ATVPDKIKX0DER'),
         base_url: @account.api_url,
         instance_id: instance_id
