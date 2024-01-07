@@ -168,6 +168,14 @@ class Blurb
       return @sd_reports if campaign_type == :sd
     end
 
+     def workflowExecutions(entity_id,instance_id)
+      WorkFlowExecutionRequests.new(
+        headers: headers_hash.merge('Amazon-Advertising-API-AdvertiserId': entity_id, 'Amazon-Advertising-API-MarketplaceId': 'ATVPDKIKX0DER'),
+        base_url: @account.api_url,
+        instance_id: instance_id
+      )
+    end
+
     def request(api_path: "",request_type: :get, payload: nil, url_params: nil, headers: headers_hash)
       @base_url = @account.api_url
 
