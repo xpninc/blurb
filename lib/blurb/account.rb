@@ -22,7 +22,7 @@ class Blurb
       initialize_profiles(profile_id)
     end
 
-    def initialize_profiles(profile_id=nil)
+    def initialize_profiles(profile_id = nil)
       @profiles = []
       if profile_id
         @profiles << Profile.new(
@@ -46,7 +46,7 @@ class Blurb
     end
 
     def get_profile(profile_id)
-      @profiles.find{ |p| p.profile_id == profile_id }
+      @profiles.find { |p| p.profile_id == profile_id }
     end
 
     def profile_list
@@ -57,6 +57,13 @@ class Blurb
       profile_request("/v2/profiles/#{profile_id}")
     end
 
+    def amcAccounts
+      ::Blurb::AmcAccountsRequests.new(
+        headers: headers_hash.merge('Amazon-Advertising-API-MarketplaceId': 'ATVPDKIKX0DER'),
+        base_url: @api_url
+      )
+    end
+
     def retrieve_token
       current_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       elapsed_time = current_time - @token_refreshed_at
@@ -64,14 +71,14 @@ class Blurb
       # refresh the token if it's been over an hour
       if @authorization_token.nil? || elapsed_time >= 3600 # 1 hour #Look at using amazons expires_inblurb/
         response = authorization_client.request(:post, "/auth/o2/token",
-          {
-            body: {
-              grant_type: "refresh_token",
-              client_id: @client.client_id,
-              refresh_token: @refresh_token,
-              client_secret: @client.client_secret
-            }
-          }
+                                                {
+                                                  body: {
+                                                    grant_type: "refresh_token",
+                                                    client_id: @client.client_id,
+                                                    refresh_token: @refresh_token,
+                                                    client_secret: @client.client_secret
+                                                  }
+                                                }
         )
 
         @authorization_token = JSON.parse(response.body)['access_token']
@@ -83,27 +90,31 @@ class Blurb
 
     private
 
-      def profile_request(api_path)
-        request = Request.new(
-          url: "#{@api_url}#{api_path}",
-          request_type: :get,
-          headers: {
-            "Authorization" => "Bearer #{retrieve_token()}",
-            "Content-Type" => "application/json",
-            "Amazon-Advertising-API-ClientId" => @client.client_id
-          }
-        )
+    def profile_request(api_path)
+      request = Request.new(
+        url: "#{@api_url}#{api_path}",
+        request_type: :get,
+        headers: headers_hash
+      )
 
-        request.make_request
-      end
+      request.make_request
+    end
 
-      def authorization_client
-        OAuth2::Client.new(
-          '',
-          '',
-          site: 'https://api.amazon.com',
-          ssl: {:verify => false}
-        )
-      end
+    def authorization_client
+      OAuth2::Client.new(
+        '',
+        '',
+        site: 'https://api.amazon.com',
+        ssl: { :verify => false }
+      )
+    end
+
+    def headers_hash
+      {
+        "Authorization" => "Bearer #{retrieve_token()}",
+        "Content-Type" => "application/json",
+        "Amazon-Advertising-API-ClientId" => @client.client_id
+      }
+    end
   end
 end
